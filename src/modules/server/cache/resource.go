@@ -29,7 +29,9 @@ func (t *ResourceMap) GetByIds(ids []int64) []*models.Resource {
 	defer t.RUnlock()
 	var objs []*models.Resource
 	for _, id := range ids {
-		objs = append(objs, t.Data[id])
+		if o, ok := t.Data[id]; ok {
+			objs = append(objs, o)
+		}
 	}
 
 	return objs
