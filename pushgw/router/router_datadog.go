@@ -257,9 +257,14 @@ func (r *Router) datadogSeries(c *gin.Context) {
 		}
 
 		if ident != "" {
-			r.ForwardByIdent(c.ClientIP(), ident, pt)
+			err = r.ForwardByIdent(c.ClientIP(), ident, pt)
 		} else {
-			r.ForwardByMetric(c.ClientIP(), item.Metric, pt)
+			err = r.ForwardByMetric(c.ClientIP(), item.Metric, pt)
+		}
+
+		if err != nil {
+			c.String(r.Pushgw.WriterOpt.OverLimitStatusCode, err.Error())
+			return
 		}
 
 		succ++

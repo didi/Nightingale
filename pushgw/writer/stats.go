@@ -48,6 +48,13 @@ var (
 		Name:      "push_queue_error_total",
 		Help:      "Number of push queue error.",
 	}, []string{"host_ident"})
+
+	CounterPushQueueOverLimitTotal = prometheus.NewCounter(prometheus.CounterOpts{
+		Namespace: namespace,
+		Subsystem: subsystem,
+		Name:      "push_queue_over_limit_error_total",
+		Help:      "Number of push queue over limit.",
+	})
 )
 
 func init() {
@@ -57,5 +64,6 @@ func init() {
 		CounterWirteErrorTotal,
 		CounterPushQueueErrorTotal,
 		GaugeSampleQueueSize,
+		CounterPushQueueOverLimitTotal,
 	)
 }

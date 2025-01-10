@@ -145,38 +145,39 @@ func matchSample(filterMap, sampleMap map[string]string) bool {
 	return true
 }
 
-func (rt *Router) ForwardByIdent(clientIP string, ident string, v *prompb.TimeSeries) {
+func (rt *Router) ForwardByIdent(clientIP string, ident string, v *prompb.TimeSeries) error {
 	v = rt.BeforePush(clientIP, v)
 	if v == nil {
-		return
+		return nil
 	}
 
 	IdentStats.Increment(ident, 1)
 	if rt.DropSample(v) {
 		CounterDropSampleTotal.WithLabelValues(ident).Inc()
-		return
+		return nil
 	}
 
 	count := IdentStats.Get(ident)
 	if count > rt.Pushgw.IdentDropThreshold {
 		CounterDropSampleTotal.WithLabelValues(ident).Inc()
-		return
+		// 单个 ident 的样本数超过阈值，不算异常，不影响其他机器的上报，不返回 err
+		return nil
 	}
 
-	rt.Writers.PushSample(ident, *v)
+	return rt.Writers.PushSample(ident, *v)
 }
 
-func (rt *Router) ForwardByMetric(clientIP string, metric string, v *prompb.TimeSeries) {
+func (rt *Router) ForwardByMetric(clientIP string, metric string, v *prompb.TimeSeries) error {
 	v = rt.BeforePush(clientIP, v)
 	rt.debugSample(clientIP, v)
 	if v == nil {
-		return
+		return nil
 	}
 
 	IdentStats.Increment(metric, 1)
 	if rt.DropSample(v) {
 		CounterDropSampleTotal.WithLabelValues(metric).Inc()
-		return
+		return nil
 	}
 
 	var hashkey string
@@ -185,7 +186,8 @@ func (rt *Router) ForwardByMetric(clientIP string, metric string, v *prompb.Time
 	} else {
 		hashkey = metric[0:1]
 	}
-	rt.Writers.PushSample(hashkey, *v)
+
+	return rt.Writers.PushSample(hashkey, *v)
 }
 
 func (rt *Router) BeforePush(clientIP string, v *prompb.TimeSeries) *prompb.TimeSeries {

@@ -202,9 +202,14 @@ func (rt *Router) openTSDBPut(c *gin.Context) {
 		}
 
 		if host != "" {
-			rt.ForwardByIdent(c.ClientIP(), host, pt)
+			err = rt.ForwardByIdent(c.ClientIP(), host, pt)
 		} else {
-			rt.ForwardByMetric(c.ClientIP(), arr[i].Metric, pt)
+			err = rt.ForwardByMetric(c.ClientIP(), arr[i].Metric, pt)
+		}
+
+		if err != nil {
+			c.String(rt.Pushgw.WriterOpt.OverLimitStatusCode, err.Error())
+			return
 		}
 
 		succ++

@@ -138,10 +138,16 @@ func (rt *Router) remoteWrite(c *gin.Context) {
 			ids[ident] = struct{}{}
 		}
 
+		var err error
 		if len(ident) > 0 {
-			rt.ForwardByIdent(c.ClientIP(), ident, &req.Timeseries[i])
+			err = rt.ForwardByIdent(c.ClientIP(), ident, &req.Timeseries[i])
 		} else {
-			rt.ForwardByMetric(c.ClientIP(), extractMetricFromTimeSeries(&req.Timeseries[i]), &req.Timeseries[i])
+			err = rt.ForwardByMetric(c.ClientIP(), extractMetricFromTimeSeries(&req.Timeseries[i]), &req.Timeseries[i])
+		}
+
+		if err != nil {
+			c.String(rt.Pushgw.WriterOpt.OverLimitStatusCode, err.Error())
+			return
 		}
 	}
 
