@@ -406,15 +406,14 @@ func haveNeverGroupedIdent(ctx *ctx.Context, idents []string) (bool, error) {
 		if err != nil {
 			return false, err
 		}
-		
+
 		if len(bgids) <= 0 {
 			return true, nil
-		}	
+		}
 	}
 
 	return false, nil
 }
-
 
 func (rt *Router) targetBindBgids(c *gin.Context) {
 	var f targetBgidsForm

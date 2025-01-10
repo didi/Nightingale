@@ -423,6 +423,62 @@ func TargetsGetIdentsByIdentsAndHostIps(ctx *ctx.Context, idents, hostIps []stri
 	return inexistence, identSet.ToSlice(), nil
 }
 
+func TargetsGetIdsByIdentsAndHostIps(ctx *ctx.Context, idents, hostIps []string) (
+	map[string]string, []int64, error) {
+	inexistence := make(map[string]string)
+	idSet := set.NewInt64Set()
+
+	if len(idents) > 0 {
+		var identToIdMap []struct {
+			Ident string
+			Id    int64
+		}
+		err := DB(ctx).Model(&Target{}).Select("id, ident").Where("ident IN ?", idents).Scan(&identToIdMap).Error
+		if err != nil {
+			return nil, nil, err
+		}
+
+		identSet := set.NewStringSet()
+		for _, entry := range identToIdMap {
+			idSet.Add(entry.Id)
+			identSet.Add(entry.Ident)
+		}
+
+		for _, ident := range idents {
+			if !identSet.Exists(ident) {
+				inexistence[ident] = "Ident not found"
+			}
+		}
+	}
+
+	// Query the hostIp corresponding to idents
+	if len(hostIps) > 0 {
+		var hostIpMap []struct {
+			HostIp string
+			Ident  string
+			Id     int64
+		}
+		err := DB(ctx).Model(&Target{}).Select("id, host_ip").Where("host_ip IN ?", hostIps).Scan(&hostIpMap).Error
+		if err != nil {
+			return nil, nil, err
+		}
+
+		hostIpSet := set.NewStringSet()
+		for _, entry := range hostIpMap {
+			hostIpSet.Add(entry.HostIp)
+			idSet.Add(entry.Id)
+		}
+
+		for _, hostIp := range hostIps {
+			if !hostIpSet.Exists(hostIp) {
+				inexistence[hostIp] = "HostIp not found"
+			}
+		}
+	}
+
+	return inexistence, idSet.ToSlice(), nil
+}
+
 func TargetGetTags(ctx *ctx.Context, idents []string, ignoreHostTag bool, bgLabelKey string) (
 	[]string, error) {
 	session := DB(ctx).Model(new(Target))
