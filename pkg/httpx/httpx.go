@@ -37,6 +37,7 @@ type Config struct {
 	APIForAgent      BasicAuths
 	APIForService    BasicAuths
 	RSA              RSAConfig
+	Token            Token
 }
 
 type RSAConfig struct {
@@ -160,4 +161,9 @@ func Init(cfg Config, handler http.Handler) func() {
 			fmt.Println("http server stopped")
 		}
 	}
+}
+
+type Token struct {
+	Enable             bool
+	HeaderUserTokenKey string
 }

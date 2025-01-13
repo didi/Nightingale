@@ -17,6 +17,10 @@ import (
 	"github.com/toolkits/pkg/ginx"
 )
 
+const (
+	DefaultTokenKey = "X-User-Token"
+)
+
 type AccessDetails struct {
 	AccessUuid   string
 	UserIdentity string
@@ -62,8 +66,25 @@ func (rt *Router) proxyAuth() gin.HandlerFunc {
 	}
 }
 
-func (rt *Router) jwtAuth() gin.HandlerFunc {
+// tokenAuth 支持两种方式的认证，固定 token 和 jwt token
+// 因为不太好区分用户使用哪个方式，所以两种方式放在一个中间件里
+func (rt *Router) tokenAuth() gin.HandlerFunc {
 	return func(c *gin.Context) {
+		// 先验证固定 token
+		tokenKey := rt.HTTP.Token.HeaderUserTokenKey
+		if tokenKey == "" {
+			tokenKey = DefaultTokenKey
+		}
+		token := c.GetHeader(tokenKey)
+
+		user, err := models.GetUserByToken(rt.Ctx, token)
+		if err == nil && user != nil && user.Username != "" {
+			c.Set("userid", user.Id)
+			c.Set("username", user.Username)
+			c.Next()
+			return
+		}
+		// 再验证 jwt token
 		metadata, err := rt.extractTokenMetadata(c.Request)
 		if err != nil {
 			ginx.Bomb(http.StatusUnauthorized, "unauthorized")
@@ -100,7 +121,7 @@ func (rt *Router) auth() gin.HandlerFunc {
 	if rt.HTTP.ProxyAuth.Enable {
 		return rt.proxyAuth()
 	} else {
-		return rt.jwtAuth()
+		return rt.tokenAuth()
 	}
 }
 

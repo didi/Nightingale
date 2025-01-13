@@ -258,6 +258,9 @@ func (rt *Router) Config(r *gin.Engine) {
 		pages.GET("/self/profile", rt.auth(), rt.user(), rt.selfProfileGet)
 		pages.PUT("/self/profile", rt.auth(), rt.user(), rt.selfProfilePut)
 		pages.PUT("/self/password", rt.auth(), rt.user(), rt.selfPasswordPut)
+		pages.GET("/self/token", rt.auth(), rt.user(), rt.getToken)
+		pages.POST("/self/token", rt.auth(), rt.user(), rt.addToken)
+		pages.DELETE("/self/token/:id", rt.auth(), rt.user(), rt.deleteToken)
 
 		pages.GET("/users", rt.auth(), rt.user(), rt.perm("/users"), rt.userGets)
 		pages.POST("/users", rt.auth(), rt.admin(), rt.userAddPost)
