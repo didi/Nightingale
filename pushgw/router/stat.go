@@ -48,6 +48,15 @@ var (
 			Help:      "HTTP request latencies in seconds.",
 		}, labels,
 	)
+
+	CounterSampleReceivedBySource = prometheus.NewGaugeVec(
+		prometheus.GaugeOpts{
+			Namespace: namespace,
+			Subsystem: subsystem,
+			Name:      "sample_received_by_source",
+			Help:      "Number of sample push by source.",
+		}, []string{"source"},
+	)
 )
 
 func registerMetrics() {
@@ -57,5 +66,6 @@ func registerMetrics() {
 		CounterSampleReceivedByIdent,
 		RequestCounter,
 		RequestDuration,
+		CounterSampleReceivedBySource,
 	)
 }

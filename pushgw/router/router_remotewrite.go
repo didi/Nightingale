@@ -150,6 +150,10 @@ func (rt *Router) remoteWrite(c *gin.Context) {
 			ids[ident] = struct{}{}
 		}
 
+		if rt.Pushgw.EnableSourceStats {
+			SourceStats.Increase(c.ClientIP())
+		}
+
 		var err error
 		if len(ident) > 0 {
 			err = rt.ForwardByIdent(c.ClientIP(), ident, &req.Timeseries[i])

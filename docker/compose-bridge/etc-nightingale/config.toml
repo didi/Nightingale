@@ -142,6 +142,11 @@ LabelRewrite = true
 # BusiGroupLabelKey = "busigroup"
 ForceUseServerTS = true
 
+## enable count sample from ip
+EnableSourceStats = false
+## threshold for source stats count, default 1500
+# SourceStatsThreshold = 1500
+
 # [Pushgw.DebugSample]
 # ident = "xx"
 # __name__ = "xx"

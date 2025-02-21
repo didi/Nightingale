@@ -10,18 +10,20 @@ import (
 )
 
 type Pushgw struct {
-	BusiGroupLabelKey   string
-	IdentMetrics        []string
-	IdentStatsThreshold int
-	IdentDropThreshold  int
-	WriteConcurrency    int
-	LabelRewrite        bool
-	ForceUseServerTS    bool
-	DebugSample         map[string]string
-	DropSample          []map[string]string
-	WriterOpt           WriterGlobalOpt
-	Writers             []WriterOptions
-	KafkaWriters        []KafkaWriterOptions
+	BusiGroupLabelKey    string
+	IdentMetrics         []string
+	IdentStatsThreshold  int
+	IdentDropThreshold   int
+	WriteConcurrency     int
+	LabelRewrite         bool
+	ForceUseServerTS     bool
+	DebugSample          map[string]string
+	DropSample           []map[string]string
+	WriterOpt            WriterGlobalOpt
+	Writers              []WriterOptions
+	KafkaWriters         []KafkaWriterOptions
+	EnableSourceStats    bool	// 启用 ClientIp 统计
+	SourceStatsThreshold int	// ClientIp 统计阈值 默认 1500
 }
 
 type WriterGlobalOpt struct {
@@ -135,6 +137,10 @@ func (p *Pushgw) PreCheck() {
 
 	if p.IdentDropThreshold <= 0 {
 		p.IdentDropThreshold = 5000000
+	}
+
+	if p.SourceStatsThreshold <= 0 {
+		p.SourceStatsThreshold = 1500
 	}
 
 	for _, writer := range p.Writers {

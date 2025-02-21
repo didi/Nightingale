@@ -77,6 +77,7 @@ func (rt *Router) Config(r *gin.Engine) {
 
 	registerMetrics()
 	go rt.ReportIdentStats()
+	rt.ReportSourceStats()
 
 	r.Use(stat())
 	// datadog url: http://n9e-pushgw.foo.com/datadog
