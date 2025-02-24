@@ -3,6 +3,7 @@ package router
 import (
 	"strings"
 
+	"github.com/ccfos/nightingale/v6/alert/sender"
 	"github.com/ccfos/nightingale/v6/models"
 	"github.com/ccfos/nightingale/v6/pkg/ctx"
 
@@ -37,16 +38,10 @@ type Record struct {
 func (rt *Router) notificationRecordAdd(c *gin.Context) {
 	var req []*models.NotificaitonRecord
 	ginx.BindJSON(c, &req)
-	err := models.DB(rt.Ctx).CreateInBatches(req, 100).Error
-	var ids []int64
-	if err == nil {
-		ids = make([]int64, len(req))
-		for i, noti := range req {
-			ids[i] = noti.Id
-		}
-	}
-
-	ginx.NewRender(c).Data(ids, err)
+	err := sender.PushNotifyRecords(req)
+	ginx.Dangerous(err, 429)
+	
+	ginx.NewRender(c).Data(nil, err)
 }
 
 func (rt *Router) notificationRecordList(c *gin.Context) {

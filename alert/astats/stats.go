@@ -23,6 +23,7 @@ type Stats struct {
 	CounterRuleEvalErrorTotal   *prometheus.CounterVec
 	CounterHeartbeatErrorTotal  *prometheus.CounterVec
 	CounterSubEventTotal        *prometheus.CounterVec
+	GaugeNotifyRecordQueueSize  prometheus.Gauge
 }
 
 func NewSyncStats() *Stats {
@@ -119,6 +120,14 @@ func NewSyncStats() *Stats {
 		Help:      "Number of heartbeat error.",
 	}, []string{})
 
+	// 通知记录队列的长度
+	GaugeNotifyRecordQueueSize := prometheus.NewGauge(prometheus.GaugeOpts{
+		Namespace: namespace,
+		Subsystem: subsystem,
+		Name:      "notify_record_queue_size",
+		Help:      "The size of notify record queue.",
+	})
+
 	prometheus.MustRegister(
 		CounterAlertsTotal,
 		GaugeAlertQueueSize,
@@ -133,6 +142,7 @@ func NewSyncStats() *Stats {
 		CounterRuleEvalErrorTotal,
 		CounterHeartbeatErrorTotal,
 		CounterSubEventTotal,
+		GaugeNotifyRecordQueueSize,
 	)
 
 	return &Stats{
@@ -149,5 +159,6 @@ func NewSyncStats() *Stats {
 		CounterRuleEvalErrorTotal:   CounterRuleEvalErrorTotal,
 		CounterHeartbeatErrorTotal:  CounterHeartbeatErrorTotal,
 		CounterSubEventTotal:        CounterSubEventTotal,
+		GaugeNotifyRecordQueueSize:  GaugeNotifyRecordQueueSize,
 	}
 }

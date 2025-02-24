@@ -153,16 +153,14 @@ func NotifyRecord(ctx *ctx.Context, evts []*models.AlertCurEvent, channel, targe
 	}
 
 	if !ctx.IsCenter {
-		_, err := poster.PostByUrlsWithResp[[]int64](ctx, "/v1/n9e/notify-record", notis)
+		err := poster.PostByUrls(ctx, "/v1/n9e/notify-record", notis)
 		if err != nil {
 			logger.Errorf("add notis:%v failed, err: %v", notis, err)
 		}
 		return
 	}
 
-	if err := models.DB(ctx).CreateInBatches(notis, 100).Error; err != nil {
-		logger.Errorf("add notis:%v failed, err: %v", notis, err)
-	}
+	PushNotifyRecords(notis)
 }
 
 func doSend(url string, body interface{}, channel string, stats *astats.Stats) (string, error) {

@@ -113,9 +113,13 @@ func Start(alertc aconf.Alert, pushgwc pconf.Pushgw, syncStats *memsto.Stats, al
 	dp := dispatch.NewDispatch(alertRuleCache, userCache, userGroupCache, alertSubscribeCache, targetCache, notifyConfigCache, taskTplsCache, alertc.Alerting, ctx, alertStats)
 	consumer := dispatch.NewConsumer(alertc.Alerting, ctx, dp, promClients)
 
+	notifyRecordComsumer := sender.NewNotifyRecordConsumer(ctx)
+
 	go dp.ReloadTpls()
 	go consumer.LoopConsume()
+	go notifyRecordComsumer.LoopConsume()
 
 	go queue.ReportQueueSize(alertStats)
+	go sender.ReportNotifyRecordQueueSize(alertStats)
 	go sender.InitEmailSender(ctx, notifyConfigCache)
 }
