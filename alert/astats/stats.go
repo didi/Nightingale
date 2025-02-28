@@ -24,6 +24,7 @@ type Stats struct {
 	CounterHeartbeatErrorTotal  *prometheus.CounterVec
 	CounterSubEventTotal        *prometheus.CounterVec
 	GaugeNotifyRecordQueueSize  prometheus.Gauge
+	GuageEventRetryQueueSize    prometheus.Gauge
 }
 
 func NewSyncStats() *Stats {
@@ -128,6 +129,13 @@ func NewSyncStats() *Stats {
 		Help:      "The size of notify record queue.",
 	})
 
+	GuageEventRetryQueueSize := prometheus.NewGauge(prometheus.GaugeOpts{
+		Namespace: namespace,
+		Subsystem: subsystem,
+		Name:      "retry_queue_size",
+		Help:      "The size of event retry queue.",
+	})
+
 	prometheus.MustRegister(
 		CounterAlertsTotal,
 		GaugeAlertQueueSize,
@@ -143,6 +151,7 @@ func NewSyncStats() *Stats {
 		CounterHeartbeatErrorTotal,
 		CounterSubEventTotal,
 		GaugeNotifyRecordQueueSize,
+		GuageEventRetryQueueSize,
 	)
 
 	return &Stats{
@@ -160,5 +169,6 @@ func NewSyncStats() *Stats {
 		CounterHeartbeatErrorTotal:  CounterHeartbeatErrorTotal,
 		CounterSubEventTotal:        CounterSubEventTotal,
 		GaugeNotifyRecordQueueSize:  GaugeNotifyRecordQueueSize,
+		GuageEventRetryQueueSize:    GuageEventRetryQueueSize,
 	}
 }

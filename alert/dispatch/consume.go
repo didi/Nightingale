@@ -28,6 +28,8 @@ type Consumer struct {
 
 	dispatch    *Dispatch
 	promClients *prom.PromClientMap
+
+	eventRetryConsumer *EventRetryComsumer
 }
 
 func InitRegisterQueryFunc(promClients *prom.PromClientMap) {
@@ -43,12 +45,14 @@ func InitRegisterQueryFunc(promClients *prom.PromClientMap) {
 }
 
 // 创建一个 Consumer 实例
-func NewConsumer(alerting aconf.Alerting, ctx *ctx.Context, dispatch *Dispatch, promClients *prom.PromClientMap) *Consumer {
+func NewConsumer(alerting aconf.Alerting, ctx *ctx.Context, dispatch *Dispatch, promClients *prom.PromClientMap, erc *EventRetryComsumer) *Consumer {
 	return &Consumer{
 		alerting:    alerting,
 		ctx:         ctx,
 		dispatch:    dispatch,
 		promClients: promClients,
+
+		eventRetryConsumer: erc,
 	}
 }
 
@@ -128,6 +132,10 @@ func (e *Consumer) persist(event *models.AlertCurEvent) {
 		event.Id, err = poster.PostByUrlsWithResp[int64](e.ctx, "/v1/n9e/event-persist", event)
 		if err != nil {
 			logger.Errorf("event:%+v persist err:%v", event, err)
+
+			// 将失败的事件放入重试队列
+			e.eventRetryConsumer.PushEventToQueue(event)
+
 			e.dispatch.Astats.CounterRuleEvalErrorTotal.WithLabelValues(fmt.Sprintf("%v", event.DatasourceId), "persist_event", event.GroupName, fmt.Sprintf("%v", event.RuleId)).Inc()
 		}
 		return
